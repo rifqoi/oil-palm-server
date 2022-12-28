@@ -32,7 +32,7 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 def get_url():
-    return settings.POSTGRES_DATABASE_URI
+    return settings.get_postgres_url()
 
 
 def run_migrations_offline() -> None:

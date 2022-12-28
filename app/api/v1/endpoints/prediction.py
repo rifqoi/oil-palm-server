@@ -10,14 +10,17 @@ from app.api import deps
 router = APIRouter()
 
 
-@router.post("/predict", response_model=schemas.Prediction)
+@router.post("/predict", status_code=201, response_model=schemas.PredictionCreate)
 def predict_image(
     *,
     db: Session = Depends(deps.get_db),
-    image_in: schemas.PredictionCreate,
+    request: schemas.PredictionCreateRequest,
     current_user: models.User = Depends(deps.get_current_user),
 ) -> Any:
 
-    image_in.user_id = current_user.id
-    prediction = crud.prediction.create(db, obj_in=image_in)
+    try:
+        prediction = crud.prediction.create(db, obj_in=request, user_id=current_user.id)
+    except Exception as e:
+        raise HTTPException(500, detail=str(e))
+
     return prediction

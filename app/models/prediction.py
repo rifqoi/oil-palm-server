@@ -7,9 +7,10 @@ from app.db.base_class import Base
 class Prediction(Base):
     id = Column(Integer, primary_key=True)
     image_url = Column(String(256))
-    bounding_box = Column(ARRAY(Float, dimensions=2))
+    count = Column(Integer, )
+    yolo_bbox = Column(ARRAY(Float, dimensions=2))
+    coco_bbox = Column(ARRAY(Float, dimensions=2))
     confidence = Column(ARRAY(Float, dimensions=1))
-    healthiness = Column(ARRAY(Float, dimensions=2))
     user_id = Column(Integer, ForeignKey("users.id"))
     users = relationship(
         "User",

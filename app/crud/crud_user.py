@@ -32,8 +32,5 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
-    def is_superuser(self, user: User) -> bool:
-        return user.is_superuser
-
 
 user = CRUDUser(User)

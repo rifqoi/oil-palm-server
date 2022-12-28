@@ -1,6 +1,6 @@
 import pathlib
 
-from pydantic import AnyHttpUrl, BaseSettings, EmailStr, validator
+from pydantic import AnyHttpUrl, BaseSettings, EmailStr, validator, Field, SecretStr
 from typing import List, Optional, Union
 
 
@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
     # JWT related
-    JWT_SECRET: str = "SECRETBOSKU"
+    JWT_SECRET: str = Field(..., env="JWT_SECRET")
     JWT_ALGORITHM: str = "HS256"
     JWT_TOKEN_EXPIRE_DAYS: int = 7
 
@@ -24,10 +24,22 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    POSTGRES_DATABASE_URI = "postgresql+psycopg2://root:root@localhost:5432/oilpalm"
+    DB_USERNAME: str = Field(..., env="DB_USERNAME")
+    DB_NAME: str = Field(..., env="DB_NAME")
+    DB_PASSWORD: str = Field(..., env="DB_PASSWORD")
+    DB_HOST: str = Field(..., env="DB_HOST")
+    DB_PORT: str = Field(..., env="DB_PORT")
+    MAP_API_KEY: str = Field(..., env="MAP_API_KEY")
+    # POSTGRES_DATABASE_URI = f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
     class Config:
         case_sensitive = True
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
+    def get_postgres_url(self) -> str:
+        URI = f"postgresql+psycopg2://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        return URI
 
 
 settings = Settings()

@@ -40,7 +40,7 @@ async def get_current_user(
             algorithms=settings.JWT_ALGORITHM,
             options={"verify_aud": False},
         )
-        username: str = payload.get("sub")
+        username = payload.get("sub")
         if username is None:
             raise credential_exceptions
         token_data = TokenData(username=username)

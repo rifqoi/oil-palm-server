@@ -1,30 +1,37 @@
 from typing import Optional, List
 from pydantic import BaseModel, HttpUrl
 
-
-class PredictionBase(BaseModel):
-    image_url: Optional[HttpUrl]
-    confidence: List[float]
-    bounding_box: List[List[float]]
-    healthiness: List[List[float]]
+# Request
+class PredictionCreateRequest(BaseModel):
+    lat: float
+    long: float
 
 
-class PredictionCreate(PredictionBase):
+# Response
+class PredictionResponseBase(BaseModel):
     user_id: Optional[int]
-    image_url: Optional[HttpUrl]
+
+
+class PredictionCreate(PredictionResponseBase):
+    user_id: Optional[int]
+    image_url: str
+    coco_bbox: List[List[float]]
+    yolo_bbox: List[List[float]]
     confidence: List[float]
-    bounding_box: List[List[float]]
-    healthiness: List[List[float]]
+    count: int
+
+    class Config:
+        orm_mode = True
 
 
-class PredictionUpdate(PredictionBase):
+class PredictionUpdate(PredictionResponseBase):
     image_url: HttpUrl
     confidence: List[float]
-    bounding_box: List[List[float]]
-    healthiness: List[List[float]]
+    coco_bbox: List[List[float]]
+    yolo_bbox: List[List[float]]
 
 
-class PredictionInDBBase(PredictionBase):
+class PredictionInDBBase(PredictionResponseBase):
     user_id: Optional[int]
 
     class Config:

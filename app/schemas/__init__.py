@@ -7,4 +7,5 @@ from app.schemas.prediction import (
     Prediction,
     PredictionCreate,
     PredictionUpdate,
+    PredictionCreateRequest,
 )
