@@ -14,7 +14,7 @@ class PredictionResponseBase(BaseModel):
 
 class PredictionCreate(PredictionResponseBase):
     user_id: Optional[int]
-    image_url: str
+    image_url: HttpUrl
     coco_bbox: List[List[float]]
     yolo_bbox: List[List[float]]
     confidence: List[float]

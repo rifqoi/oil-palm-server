@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, middleware
 
 from app.api.v1.endpoints import auth, prediction
 
