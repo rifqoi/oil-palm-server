@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  oilpalm-api:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: oilpalm-backend
+    volumes:
+      - ./model:/app/model
+    restart: always
+    ports:
+      - "8000:8000"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - oilpalm
+
+  postgres:
+    image: postgres
+    container_name: pg-oilpalm
+    volumes:
+      - oilpalm-db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=oilpalm
+    networks:
+      - oilpalm
+
+networks:
+  oilpalm:
+    driver: bridge
+
+volumes:
+  oilpalm-db:
