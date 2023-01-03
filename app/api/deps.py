@@ -33,7 +33,6 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        print("payload")
         payload = jwt.decode(
             token=token,
             key=settings.JWT_SECRET,

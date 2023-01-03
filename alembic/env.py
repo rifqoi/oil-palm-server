@@ -25,7 +25,7 @@ if config.config_file_name is not None:
 from app.db.base import Base
 from app.core.config import settings
 
-target_metadata = Base.metadata
+target_metadata = Base.metadata  # type: ignore
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -67,7 +67,8 @@ def run_migrations_online() -> None:
 
     """
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = get_url()
+    if configuration is not None:
+        configuration["sqlalchemy.url"] = get_url()
 
     connectable = engine_from_config(
         configuration,

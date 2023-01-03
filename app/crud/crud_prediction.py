@@ -8,23 +8,38 @@ from PIL import Image
 
 from app.crud.base import CRUDBase
 from app.models.prediction import Prediction
-from app.schemas.prediction import PredictionCreate, PredictionUpdate, PredictionCreateRequest
+from app.schemas.prediction import (
+    PredictionCreate,
+    PredictionUpdate,
+    PredictionCreateRequest,
+)
 from app.core.config import settings
 from app.ml_inference.yolo import OilPalmModel, BoundingBox
 
-def read_image_from_url(url: str) -> np.array:
+
+def read_image_from_url(url: str) -> np.ndarray:
     response = requests.get(url=url)
     img = Image.open(BytesIO(response.content))
 
     arr = np.asarray(img)
     return arr
 
-def static_map_url(lat: float, long:float, zoom: int, width: int, height: int,) -> Tuple[str, str]:
+
+def static_map_url(
+    lat: float,
+    long: float,
+    zoom: int,
+    width: int,
+    height: int,
+) -> Tuple[str, str]:
     url_without_key = f"https://maps.googleapis.com/maps/api/staticmap?center={lat},{long}&zoom={zoom}&scale=3&size={width}x{height}&maptype=satellite&key="
     url = f"https://maps.googleapis.com/maps/api/staticmap?center={lat},{long}&zoom={zoom}&scale=3&size={width}x{height}&maptype=satellite&key={settings.MAP_API_KEY}"
     return url, url_without_key
 
-def convert_yolo_to_coco(yolo_bboxes: List[BoundingBox], img_width: int, img_height: int) -> List[BoundingBox]:
+
+def convert_yolo_to_coco(
+    yolo_bboxes: List[BoundingBox], img_width: int, img_height: int
+) -> List[BoundingBox]:
     coco_bboxes: List[BoundingBox] = []
     for yolo_bbox in yolo_bboxes:
         coco_bbox = BoundingBox()
@@ -45,6 +60,7 @@ def convert_yolo_to_coco(yolo_bboxes: List[BoundingBox], img_width: int, img_hei
 
     return coco_bboxes
 
+
 def bbox_to_array(bboxes: List[BoundingBox]) -> List[List[float]]:
     array: List[List[float]] = []
     for bbox in bboxes:
@@ -59,6 +75,7 @@ def bbox_to_array(bboxes: List[BoundingBox]) -> List[List[float]]:
 
     return array
 
+
 def bbox_to_confidence(bboxes: List[BoundingBox]) -> List[float]:
     conf_array: List[float] = []
 
@@ -69,11 +86,15 @@ def bbox_to_confidence(bboxes: List[BoundingBox]) -> List[float]:
 
 
 class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
-    def create(self, db: Session, *, obj_in: PredictionCreateRequest, user_id: int) -> Optional[Prediction]:
+    def create(
+        self, db: Session, *, obj_in: PredictionCreateRequest, user_id: int
+    ) -> Optional[Prediction]:
         model = OilPalmModel()
         width = 640
         height = 640
-        url, url_without_key = static_map_url(obj_in.lat, obj_in.long, 20, width=width, height=height)
+        url, url_without_key = static_map_url(
+            obj_in.lat, obj_in.long, 20, width=width, height=height
+        )
         img_array = read_image_from_url(url)
         yolo_bbox = model.predict(img_array)
         coco_bbox = convert_yolo_to_coco(yolo_bbox, width, height)
@@ -84,16 +105,17 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         count = len(yolo_array)
 
         db_obj = Prediction()
-        db_obj.user_id = user_id
-        db_obj.yolo_bbox = yolo_array
-        db_obj.coco_bbox = coco_array
-        db_obj.confidence = conf_array
-        db_obj.image_url = url_without_key
-        db_obj.count = count
+        db_obj.user_id = user_id  # type: ignore
+        db_obj.yolo_bbox = yolo_array  # type: ignore
+        db_obj.coco_bbox = coco_array  # type: ignore
+        db_obj.confidence = conf_array  # type: ignore
+        db_obj.image_url = url_without_key  # type: ignore
+        db_obj.count = count  # type: ignore
 
         db.add(db_obj)
         db.commit()
 
         return db_obj
+
 
 prediction = CRUDPrediction(Prediction)

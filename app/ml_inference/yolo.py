@@ -6,9 +6,9 @@ import numpy as np
 from numpy.core.numeric import argwhere
 import onnxruntime as ort
 
-from app.ml_inference.type import BoundingBox
 
 class BoundingBox(BaseModel):
+    # type: ignore
     x: float = None
     y: float = None
     width: float = None
@@ -150,7 +150,7 @@ class OilPalmModel:
         bboxes: List[BoundingBox] = []
         for box in pp_output_onnx:
             bbox_model = BoundingBox()
-            
+
             # Convert npfloat to native flaot
             bbox_model.x = box[0].item()
             bbox_model.y = box[1].item()
@@ -160,5 +160,5 @@ class OilPalmModel:
             bbox_model.label = box[5]
 
             bboxes.append(bbox_model)
-        
+
         return bboxes
