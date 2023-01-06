@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from PIL import Image
 
 from app.crud.base import CRUDBase
+from app.ml_inference import yolo
 from app.models.prediction import Prediction
 from app.schemas.prediction import (
     PredictionCreate,
@@ -44,15 +45,18 @@ def convert_yolo_to_coco(
     for yolo_bbox in yolo_bboxes:
         coco_bbox = BoundingBox()
 
-        coco_width = yolo_bbox.width * img_width
-        coco_height = yolo_bbox.height * img_height
-        coco_x = yolo_bbox.x * img_width - (coco_width / 2)
-        coco_y = yolo_bbox.y * img_height - (coco_height / 2)
+        x = int(yolo_bbox.x * img_width)
+        y = int(yolo_bbox.y * img_height)
 
-        coco_bbox.x = coco_x
-        coco_bbox.y = coco_y
-        coco_bbox.width = coco_width
-        coco_bbox.height = coco_height
+        x2 = int(yolo_bbox.width * img_width)
+        y2 = int(yolo_bbox.height * img_height)
+
+        w = x2 - x
+        h = y2 - y
+        coco_bbox.x = x
+        coco_bbox.y = y
+        coco_bbox.width = w
+        coco_bbox.height = h
         coco_bbox.label = yolo_bbox.label
         coco_bbox.confidence = yolo_bbox.confidence
 
