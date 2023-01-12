@@ -16,6 +16,10 @@ class BoundingBox(BaseModel):
     confidence: float = None
     label: str = None
 
+    # For mercator projection
+    x_center: float = None
+    y_center: float = None
+
 
 class OilPalmModel:
     def __init__(

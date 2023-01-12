@@ -25,18 +25,30 @@ def predict_image(
 ) -> Any:
 
     try:
-        prediction = crud.prediction.create(db, obj_in=request, user_id=current_user.id)
+        prediction, trees = crud.prediction.create(
+            db, obj_in=request, user_id=current_user.id
+        )
+        resp_dict = {}
+        resp_dict["user_id"] = prediction.user_id  # type: ignore
+        resp_dict["yolo_bbox"] = prediction.yolo_bbox  # type: ignore
+        resp_dict["confidence"] = prediction.confidence  # type: ignore
+        resp_dict["coco_bbox"] = prediction.coco_bbox  # type: ignore
+        resp_dict["count"] = prediction.count  # type: ignore
+        resp_dict["image_url"] = prediction.image_url  # type: ignore
+        resp_dict["trees"] = trees  # type: ignore
     except Exception as e:
         raise HTTPException(500, detail=str(e))
 
-    return prediction
+    return resp_dict
 
-@router.post("/image",     responses = {
-        200: {
-            "content": {"image/png": {}}
-        }
-    })
-def get_image(*, request: schemas.PredictionCreateRequest,     response_class=Response, current_user: models.User = Depends(deps.get_current_user)):
+
+@router.post("/image", responses={200: {"content": {"image/png": {}}}})
+def get_image(
+    *,
+    request: schemas.PredictionCreateRequest,
+    response_class=Response,
+    current_user: models.User = Depends(deps.get_current_user),
+):
     url = f"https://maps.googleapis.com/maps/api/staticmap?center={request.lat},{request.long}&zoom=20&scale=3&size=640x640&maptype=satellite&key={settings.MAP_API_KEY}"
     try:
         response = requests.get(url=url)

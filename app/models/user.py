@@ -4,6 +4,7 @@ from app.db.base_class import Base
 
 # Import Prediction for sqlalchemy to detect the relationship
 from app.models.prediction import Prediction
+from app.models.tree import Tree
 
 
 class User(Base):
@@ -12,6 +13,12 @@ class User(Base):
     name = Column(String(256))
     predictions = relationship(
         "Prediction",
+        cascade="all,delete-orphan",
+        back_populates="users",
+        uselist=True,
+    )
+    trees = relationship(
+        "Tree",
         cascade="all,delete-orphan",
         back_populates="users",
         uselist=True,
