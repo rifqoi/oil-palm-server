@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Optional, List
 from pydantic import BaseModel, HttpUrl
 
@@ -13,12 +14,15 @@ class PredictionResponseBase(BaseModel):
 
 
 class OilPalmTree(BaseModel):
+    id: int
     user_id: int
     lat: float
     long: float
     nw_bounds: List[float]
     se_bounds: List[float]
     confidence: float
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
 
     class Config:
         orm_mode = True

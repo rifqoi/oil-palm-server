@@ -20,6 +20,4 @@ docker run -it \
 	-e POSTGRES_DB="oilpalm" \
 	-v $DOCKER_VOLUME:/var/lib/postgresql/data \
 	-p 5432:5432 \
-	postgres
-
-
+    postgres

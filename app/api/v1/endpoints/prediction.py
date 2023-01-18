@@ -1,8 +1,9 @@
+from datetime import datetime
 from io import BytesIO
 import requests
 
 from PIL import Image
-from typing import Any
+from typing import Any, List
 
 from sqlalchemy.orm.session import Session
 from fastapi import APIRouter, Depends, HTTPException
@@ -14,6 +15,22 @@ from app.core.config import settings
 
 
 router = APIRouter()
+
+
+@router.get("/trees", status_code=200, response_model=List[schemas.OilPalmTree])
+def get_predicted_trees(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+):
+    try:
+        trees = crud.prediction.get_predicted_trees(db, user_id=current_user.id)
+        for tree in trees:
+            tree.created_at = str(tree.created_at)
+
+        return trees
+    except Exception as e:
+        raise HTTPException(500, detail=str(e))
 
 
 @router.post("/predict", status_code=201, response_model=schemas.PredictionCreate)

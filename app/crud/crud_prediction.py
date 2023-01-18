@@ -97,6 +97,10 @@ def bbox_to_confidence(bboxes: List[BoundingBox]) -> List[float]:
 
 
 class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
+    def get_predicted_trees(self, db: Session, *, user_id: int):
+        trees = db.query(Tree).filter(Tree.user_id == user_id).all()
+        return trees
+
     def create(
         self, db: Session, *, obj_in: PredictionCreateRequest, user_id: int
     ) -> Tuple[Prediction, List[Tree]]:
@@ -147,8 +151,6 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         db_obj.confidence = conf_array  # type: ignore
         db_obj.image_url = url_without_key  # type: ignore
         db_obj.count = count  # type: ignore
-
-        print(trees)
 
         db.add(db_obj)
         db.commit()
