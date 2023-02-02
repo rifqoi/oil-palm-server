@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKER_VOLUME=oilpalm-db
+DOCKER_VOLUME=oilpalm-db3
 
 if ! docker volume inspect $DOCKER_VOLUME 2>/dev/null 1>/dev/null;then
     echo "Creating $DOCKER_VOLUME docker volume"

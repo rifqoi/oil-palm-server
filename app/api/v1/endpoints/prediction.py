@@ -26,7 +26,7 @@ def get_predicted_trees(
     try:
         trees = crud.prediction.get_predicted_trees(db, user_id=current_user.id)
         for tree in trees:
-            tree.created_at = str(tree.created_at)
+            tree.created_at = tree.created_at.strftime("%Y-%m-%d")
 
         return trees
     except Exception as e:
@@ -52,6 +52,8 @@ def predict_image(
         resp_dict["coco_bbox"] = prediction.coco_bbox  # type: ignore
         resp_dict["count"] = prediction.count  # type: ignore
         resp_dict["image_url"] = prediction.image_url  # type: ignore
+        for tree in trees:
+            tree.created_at = tree.created_at.strftime("%Y-%m-%d")
         resp_dict["trees"] = trees  # type: ignore
     except Exception as e:
         raise HTTPException(500, detail=str(e))

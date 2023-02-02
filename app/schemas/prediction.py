@@ -16,13 +16,14 @@ class PredictionResponseBase(BaseModel):
 class OilPalmTree(BaseModel):
     id: int
     user_id: int
+    tree_id: int
     lat: float
     long: float
     nw_bounds: List[float]
     se_bounds: List[float]
     confidence: float
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
+    created_at: Optional[str]
+    updated_at: Optional[str]
 
     class Config:
         orm_mode = True

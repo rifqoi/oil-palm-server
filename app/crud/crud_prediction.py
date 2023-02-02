@@ -9,6 +9,7 @@ from PIL import Image
 from app.crud.base import CRUDBase
 from app.mercator.google_static_maps import GoogleStaticMap
 from app.mercator.mercator_projection import G_LatLng
+from app.models import tree
 from app.models.prediction import Prediction
 from app.models.tree import Tree
 from app.schemas.prediction import (
@@ -124,20 +125,31 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
 
         trees: List[Tree] = []
         for bbox in coco_bbox:
+            last_tree = (
+                db.query(Tree)
+                .filter(Tree.user_id == user_id)
+                .order_by(Tree.tree_id.desc())
+                .first()
+            )
             tree_obj = Tree()
             latlng = map.get_lat_long(center, 20, bbox.x_center, bbox.y_center)
             bound = map.get_bounds_lat_long(
                 center, 20, bbox.x, bbox.y, bbox.width, bbox.height
             )
             tree_obj.user_id = user_id  # type: ignore
+            if isinstance(last_tree, Tree):
+                tree_obj.tree_id = last_tree.tree_id + 1  # type: ignore
+            else:
+                tree_obj.tree_id = 1
             tree_obj.lat = latlng.lat  # type: ignore
             tree_obj.long = latlng.lng  # type: ignore
             tree_obj.nw_bounds = [bound.nw.lat, bound.nw.lng]  # type: ignore
             tree_obj.se_bounds = [bound.se.lat, bound.se.lng]  # type: ignore
             tree_obj.confidence = bbox.confidence  # type: ignore
-            trees.append(tree_obj)
             db.add(tree_obj)
             db.commit()
+            print("tree_id ", tree_obj.tree_id)
+            trees.append(tree_obj)
 
         yolo_array = bbox_to_array(yolo_bbox)
         coco_array = bbox_to_array(coco_bbox)
