@@ -1,12 +1,13 @@
 from datetime import datetime
 from io import BytesIO
+
 import requests
 
 from PIL import Image
 from typing import Any, List
 
 from sqlalchemy.orm.session import Session
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi import Response
 
 from app import schemas, models, crud
@@ -17,7 +18,9 @@ from app.core.config import settings
 router = APIRouter()
 
 
-@router.get("/trees", status_code=200, response_model=List[schemas.OilPalmTree])
+@router.get(
+    "/trees", status_code=status.HTTP_200_OK, response_model=List[schemas.OilPalmTree]
+)
 def get_predicted_trees(
     *,
     db: Session = Depends(deps.get_db),
@@ -33,7 +36,25 @@ def get_predicted_trees(
         raise HTTPException(500, detail=str(e))
 
 
-@router.post("/predict", status_code=201, response_model=schemas.PredictionCreate)
+@router.delete("/trees/delete/{tree_id}", status_code=status.HTTP_200_OK)
+def delete_tree_by_id(
+    *,
+    tree_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+):
+    try:
+        crud.prediction.delete_tree(db, user_id=current_user.id, tree_id=tree_id)
+        return {"message": f"Tree {tree_id} successfully deleted. {current_user.id}"}
+    except Exception as e:
+        raise HTTPException(500, detail=str(e))
+
+
+@router.post(
+    "/predict",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.PredictionCreate,
+)
 def predict_image(
     *,
     db: Session = Depends(deps.get_db),
@@ -61,7 +82,7 @@ def predict_image(
     return resp_dict
 
 
-@router.post("/image", responses={200: {"content": {"image/png": {}}}})
+@router.post("/image", responses={status.HTTP_200_OK: {"content": {"image/png": {}}}})
 def get_image(
     *,
     request: schemas.PredictionCreateRequest,
