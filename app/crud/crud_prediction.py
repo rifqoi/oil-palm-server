@@ -3,7 +3,7 @@ from io import BytesIO
 
 import numpy as np
 import requests
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, query
 from PIL import Image
 
 from app.crud.base import CRUDBase
@@ -113,6 +113,31 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
 
         db.commit()
 
+    def get_multi_by_user_id(
+        self, db: Session, *, user_id: int, skip: int = 0, limit: int = 5000
+    ) -> List[Prediction]:
+        return (
+            db.query(Prediction)
+            .filter(Prediction.user_id == user_id)
+            .order_by(Prediction.id)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+    def get_by_user_id(
+        self, db: Session, *, id: int, user_id: int
+    ) -> Optional[Prediction]:
+        return (
+            db.query(Prediction)
+            .filter(Prediction.user_id == user_id)
+            .filter(Prediction.id == id)
+            .first()
+        )
+
+    def get_total_trees(self, db: Session, *, user_id: int) -> Optional[int]:
+        return db.query(Tree).filter(Tree.user_id == user_id).count()
+
     def create(
         self, db: Session, *, obj_in: PredictionCreateRequest, user_id: int
     ) -> Tuple[Prediction, List[Tree]]:
@@ -135,13 +160,14 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         coco_bbox = convert_yolo_to_coco(yolo_bbox, width, height)
 
         trees: List[Tree] = []
+        last_tree = (
+            db.query(Tree)
+            .filter(Tree.user_id == user_id)
+            .order_by(Tree.tree_id.desc())
+            .first()
+        )
+        last_id = last_tree.tree_id
         for bbox in coco_bbox:
-            last_tree = (
-                db.query(Tree)
-                .filter(Tree.user_id == user_id)
-                .order_by(Tree.tree_id.desc())
-                .first()
-            )
             tree_obj = Tree()
             latlng = map.get_lat_long(center, 20, bbox.x_center, bbox.y_center)
             bound = map.get_bounds_lat_long(
@@ -149,7 +175,8 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
             )
             tree_obj.user_id = user_id  # type: ignore
             if isinstance(last_tree, Tree):
-                tree_obj.tree_id = last_tree.tree_id + 1  # type: ignore
+                last_id += 1
+                tree_obj.tree_id = last_id  # type: ignore
             else:
                 tree_obj.tree_id = 1
             tree_obj.lat = latlng.lat  # type: ignore
@@ -159,7 +186,6 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
             tree_obj.confidence = bbox.confidence  # type: ignore
             db.add(tree_obj)
             db.commit()
-            print("tree_id ", tree_obj.tree_id)
             trees.append(tree_obj)
 
         yolo_array = bbox_to_array(yolo_bbox)
@@ -174,6 +200,21 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         db_obj.confidence = conf_array  # type: ignore
         db_obj.image_url = url_without_key  # type: ignore
         db_obj.count = count  # type: ignore
+        db_obj.nw_bounds = obj_in.nw_bounds
+        db_obj.se_bounds = obj_in.se_bounds
+        db_obj.center_coords = [obj_in.lat, obj_in.long]
+
+        last_pred = (
+            db.query(Prediction)
+            .filter(Prediction.user_id == user_id)
+            .order_by(Prediction.prediction_id.desc())
+            .first()
+        )
+        print(last_pred.prediction_id)
+        if isinstance(last_pred, Prediction):
+            db_obj.prediction_id = last_pred.prediction_id + 1  # type: ignore
+        else:
+            db_obj.prediction_id = 1
 
         db.add(db_obj)
         db.commit()

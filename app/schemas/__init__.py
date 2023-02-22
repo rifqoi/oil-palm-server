@@ -8,5 +8,7 @@ from app.schemas.prediction import (
     PredictionCreate,
     PredictionUpdate,
     PredictionCreateRequest,
+    PredictionWithoutBox,
     OilPalmTree,
+    TotalOilPalmTree,
 )
