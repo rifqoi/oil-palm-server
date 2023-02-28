@@ -166,7 +166,10 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
             .order_by(Tree.tree_id.desc())
             .first()
         )
-        last_id = last_tree.tree_id
+
+        if isinstance(last_tree, Tree):
+            last_id = last_tree.tree_id
+
         for bbox in coco_bbox:
             tree_obj = Tree()
             latlng = map.get_lat_long(center, 20, bbox.x_center, bbox.y_center)
@@ -210,8 +213,8 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
             .order_by(Prediction.prediction_id.desc())
             .first()
         )
-        print(last_pred.prediction_id)
         if isinstance(last_pred, Prediction):
+            print(last_pred.prediction_id)
             db_obj.prediction_id = last_pred.prediction_id + 1  # type: ignore
         else:
             db_obj.prediction_id = 1
