@@ -1,29 +1,20 @@
-from sqlalchemy import DateTime, Integer, Column, String
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from app.db.base_class import Base
+from datetime import datetime
+from typing import List
+from sqlalchemy.ext.declarative import declared_attr
+from sqlmodel import Field, Relationship, SQLModel
 
-# Import Prediction for sqlalchemy to detect the relationship
 from app.models.prediction import Prediction
-from app.models.tree import Tree
 
 
-class User(Base):
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(256))
-    name = Column(String(256))
-    predictions = relationship(
-        "Prediction",
-        cascade="all,delete-orphan",
-        back_populates="users",
-        uselist=True,
-    )
-    trees = relationship(
-        "Tree",
-        cascade="all,delete-orphan",
-        back_populates="users",
-        uselist=True,
-    )
-    password = Column(String(256), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+class User(SQLModel, table=True):
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "users"
+
+    id: int = Field(primary_key=True, index=True)
+    name: str = Field(max_length=256, nullable=False)
+    username: str = Field(max_length=256, nullable=False)
+    password: str = Field(max_length=256, nullable=False)
+    predictions: List["Prediction"] = Relationship(back_populates="users")
+    created_at: datetime = Field(default=datetime.utcnow(), nullable=False)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
