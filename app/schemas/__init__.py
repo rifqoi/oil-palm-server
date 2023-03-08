@@ -9,6 +9,7 @@ from app.schemas.prediction import (
     PredictionUpdate,
     PredictionCreateRequest,
     PredictionWithoutBox,
+    PredictionWithBox,
     OilPalmTree,
     TotalOilPalmTree,
 )

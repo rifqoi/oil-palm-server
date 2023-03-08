@@ -15,7 +15,7 @@ class Prediction(SQLModel, table=True):
         return "predictions"
 
     id: int = Field(primary_key=True)
-    prediction_id: int = Field()
+    prediction_id: Optional[int] = Field()
     user_id: int = Field(foreign_key="users.id")
     image_url: str
     count: int

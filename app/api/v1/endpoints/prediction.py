@@ -28,7 +28,7 @@ def get_predicted_trees(
     current_user: models.User = Depends(deps.get_current_user),
 ):
     try:
-        trees = crud.prediction.get_predicted_trees(db, user_id=current_user.id)
+        trees = crud.tree.get_all_trees(db, user_id=current_user.id)
         for tree in trees:
             tree.created_at = tree.created_at.strftime("%Y-%m-%d")
 
@@ -67,22 +67,23 @@ def predict_image(
         prediction, trees = crud.prediction.create(
             db, obj_in=request, user_id=current_user.id
         )
-        resp_dict = {}
-        resp_dict["user_id"] = prediction.user_id  # type: ignore
-        resp_dict["yolo_bbox"] = prediction.yolo_bbox  # type: ignore
-        resp_dict["confidence"] = prediction.confidence  # type: ignore
-        resp_dict["coco_bbox"] = prediction.coco_bbox  # type: ignore
-        resp_dict["count"] = prediction.count  # type: ignore
-        resp_dict["image_url"] = prediction.image_url  # type: ignore
-        for tree in trees:
-            tree.created_at = tree.created_at.strftime("%Y-%m-%d")
-        resp_dict["trees"] = trees  # type: ignore
-        resp_dict["nw_bounds"] = prediction.nw_bounds
-        resp_dict["se_bounds"] = prediction.se_bounds
+        print(prediction)
+        # resp_dict = {}
+        # resp_dict["user_id"] = prediction.user_id  # type: ignore
+        # resp_dict["yolo_bbox"] = prediction.yolo_bbox  # type: ignore
+        # resp_dict["confidence"] = prediction.confidence  # type: ignore
+        # resp_dict["coco_bbox"] = prediction.coco_bbox  # type: ignore
+        # resp_dict["count"] = prediction.count  # type: ignore
+        # resp_dict["image_url"] = prediction.image_url  # type: ignore
+        # for tree in trees:
+        #     tree.created_at = tree.created_at.strftime("%Y-%m-%d")
+        # resp_dict["trees"] = trees  # type: ignore
+        # resp_dict["nw_bounds"] = prediction.nw_bounds
+        # resp_dict["se_bounds"] = prediction.se_bounds
     except Exception as e:
         raise HTTPException(500, detail=str(e))
 
-    return resp_dict
+    return prediction
 
 
 @router.get(
@@ -128,7 +129,7 @@ def get_total_trees(
 @router.get(
     "/predictions/{prediction_id}",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.PredictionWithoutBox,
+    response_model=schemas.PredictionWithBox,
 )
 def get_prediction(
     *,
