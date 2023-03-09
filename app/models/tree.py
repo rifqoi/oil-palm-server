@@ -1,32 +1,29 @@
-from sqlalchemy import (
-    DateTime,
-    Identity,
-    Integer,
-    Column,
-    Sequence,
-    String,
-    Float,
-    ForeignKey,
-)
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import ARRAY
-from app.db.base_class import Base
-from sqlalchemy.sql import func
+from datetime import datetime
+from typing import List, Optional, TYPE_CHECKING
+from sqlalchemy.ext.declarative import declared_attr
+from sqlmodel import Field, Relationship, SQLModel, ARRAY, Float, Column
+
+if TYPE_CHECKING:
+    from app.models.prediction import Prediction
 
 
-class Tree(Base):
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    tree_id = Column(Integer, Identity(start=1, cycle=True))
-    lat = Column(Float)
-    long = Column(Float)
-    nw_bounds = Column(ARRAY(Float, dimensions=1))
-    se_bounds = Column(ARRAY(Float, dimensions=1))
-    confidence = Column(Float)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    users = relationship("User", back_populates="trees")
+class Tree(SQLModel, table=True):
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "trees"
 
-    @property
-    def formatted_created_at(self):
-        return self.created_at.strftime("%Y-%m-%d")
+    id: Optional[int] = Field(primary_key=True)
+    user_id: int = Field(foreign_key="users.id")
+    prediction_id: int = Field(foreign_key="predictions.id")
+    tree_id: Optional[int]
+    lat: float
+    long: float
+    yolo_bbox: List[float] = Field(sa_column=Column(ARRAY(Float, dimensions=1)))
+    coco_bbox: List[float] = Field(sa_column=Column(ARRAY(Float, dimensions=1)))
+    nw_bounds: List[float] = Field(sa_column=Column(ARRAY(Float, dimensions=1)))
+    se_bounds: List[float] = Field(sa_column=Column(ARRAY(Float, dimensions=1)))
+    confidence: float
+    prediction: Optional["Prediction"] = Relationship(back_populates="trees")
+
+    created_at: datetime = Field(default=datetime.utcnow(), nullable=False)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)

@@ -50,8 +50,8 @@ class GoogleStaticMap:
         proj = MercatorProjection()
         # Find z=0 pixel coordinates of the center
         centerPx = proj.fromLatLngToPoint(center)
-        # print("center lat long", center.__dict__)
-        # print("z=0", centerPx.__dict__)
+        print("center lat long", center.__dict__)
+        print("z=0", centerPx.__dict__)
         # Find z=0 pixel coordinates of the corners of the Google Static Map image
         # desired_x = (center_x + (image_x - width / 2))
         # e.g.
@@ -69,8 +69,8 @@ class GoogleStaticMap:
         )
         # print(f"coco {x}px {y}px")
         tree_latlng = proj.fromPointToLatLng(point)
-        # print(f"z={zoom} latlong {tree_latlng.__dict__}")
-        # print(f"z={zoom} {point.__dict__}")
+        print(f"z=0 {point.__dict__}")
+        print(f"z=0 latlong {tree_latlng.__dict__}")
         # print()
 
         latlng = LatLng(lat=tree_latlng.lat, lng=tree_latlng.lng)

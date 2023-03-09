@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import Optional, List, Union
 from pydantic import BaseModel, HttpUrl
 
 # Request
@@ -24,8 +24,9 @@ class OilPalmTree(BaseModel):
     nw_bounds: List[float]
     se_bounds: List[float]
     confidence: float
-    created_at: Optional[str]
-    updated_at: Optional[str]
+    created_at: Optional[Union[datetime, str]]
+    updated_at: Optional[Union[datetime, str]]
+    prediction_id: Optional[int]
 
     class Config:
         orm_mode = True
@@ -36,14 +37,14 @@ class TotalOilPalmTree(BaseModel):
 
 
 class PredictionCreate(PredictionResponseBase):
+    id: Optional[int]
+    prediction_id: Optional[int]
     user_id: Optional[int]
     count: int
     nw_bounds: List[float]
     se_bounds: List[float]
+    center_coords: List[float]
     image_url: HttpUrl
-    coco_bbox: List[List[float]]
-    yolo_bbox: List[List[float]]
-    confidence: List[float]
     trees: List[OilPalmTree]
 
     class Config:
@@ -57,7 +58,7 @@ class PredictionUpdate(PredictionResponseBase):
     yolo_bbox: List[List[float]]
 
 
-class PredictionWithoutBox(BaseModel):
+class PredictionBase(BaseModel):
     id: Optional[int]
     prediction_id: Optional[int]
     user_id: Optional[int]
@@ -65,10 +66,18 @@ class PredictionWithoutBox(BaseModel):
     nw_bounds: Optional[List[float]]
     se_bounds: Optional[List[float]]
     center_coords: Optional[List[float]]
-    created_at: Optional[str]
+    created_at: Optional[Union[datetime, str]]
 
     class Config:
         orm_mode = True
+
+
+class PredictionWithoutBox(PredictionBase):
+    ...
+
+
+class PredictionWithBox(PredictionBase):
+    trees: List[OilPalmTree]
 
 
 class PredictionInDBBase(PredictionResponseBase):

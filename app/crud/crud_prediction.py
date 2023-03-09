@@ -9,7 +9,6 @@ from PIL import Image
 from app.crud.base import CRUDBase
 from app.mercator.google_static_maps import GoogleStaticMap
 from app.mercator.mercator_projection import G_LatLng
-from app.models import tree
 from app.models.prediction import Prediction
 from app.models.tree import Tree
 from app.schemas.prediction import (
@@ -48,11 +47,11 @@ def convert_yolo_to_coco(
     for yolo_bbox in yolo_bboxes:
         coco_bbox = BoundingBox()
 
-        x = int(yolo_bbox.x * img_width)
-        y = int(yolo_bbox.y * img_height)
+        x = yolo_bbox.x * img_width
+        y = yolo_bbox.y * img_height
 
-        x2 = int(yolo_bbox.width * img_width)
-        y2 = int(yolo_bbox.height * img_height)
+        x2 = yolo_bbox.width * img_width
+        y2 = yolo_bbox.height * img_height
 
         w = x2 - x
         h = y2 - y
@@ -97,7 +96,7 @@ def bbox_to_confidence(bboxes: List[BoundingBox]) -> List[float]:
     return conf_array
 
 
-class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
+class CRUDPrediction:
     def get_predicted_trees(self, db: Session, *, user_id: int):
         trees = db.query(Tree).filter(Tree.user_id == user_id).all()
         return trees
@@ -159,6 +158,32 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         yolo_bbox = model.predict(img_array)
         coco_bbox = convert_yolo_to_coco(yolo_bbox, width, height)
 
+        yolo_array = bbox_to_array(yolo_bbox)
+        count = len(yolo_array)
+
+        last_pred = (
+            db.query(Prediction)
+            .filter(Prediction.user_id == user_id)
+            .order_by(Prediction.prediction_id.desc())
+            .first()
+        )
+        pred_id = None
+        if isinstance(last_pred, Prediction):
+            if last_pred.prediction_id:
+                pred_id = last_pred.prediction_id + 1
+        else:
+            pred_id = 1
+
+        pred_obj = Prediction(
+            user_id=user_id,
+            image_url=url_without_key,
+            center_coords=[obj_in.lat, obj_in.long],
+            nw_bounds=obj_in.nw_bounds,
+            se_bounds=obj_in.se_bounds,
+            prediction_id=pred_id,
+            count=count,
+        )
+
         trees: List[Tree] = []
         last_tree = (
             db.query(Tree)
@@ -167,62 +192,43 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
             .first()
         )
 
+        last_id = None
         if isinstance(last_tree, Tree):
             last_id = last_tree.tree_id
 
+        count = 1
         for bbox in coco_bbox:
-            tree_obj = Tree()
             latlng = map.get_lat_long(center, 20, bbox.x_center, bbox.y_center)
             bound = map.get_bounds_lat_long(
                 center, 20, bbox.x, bbox.y, bbox.width, bbox.height
             )
-            tree_obj.user_id = user_id  # type: ignore
-            if isinstance(last_tree, Tree):
+            if isinstance(last_id, int):
                 last_id += 1
-                tree_obj.tree_id = last_id  # type: ignore
             else:
-                tree_obj.tree_id = 1
-            tree_obj.lat = latlng.lat  # type: ignore
-            tree_obj.long = latlng.lng  # type: ignore
-            tree_obj.nw_bounds = [bound.nw.lat, bound.nw.lng]  # type: ignore
-            tree_obj.se_bounds = [bound.se.lat, bound.se.lng]  # type: ignore
-            tree_obj.confidence = bbox.confidence  # type: ignore
+                last_id = 1
+
+            if count == 1:
+                print("yolo", yolo_bbox[0])
+                print("coco", bbox)
+                print("lat", latlng.lat)
+                print("lng", latlng.lng)
+                print()
+
+            tree_obj = Tree(
+                user_id=user_id,
+                tree_id=last_id,
+                lat=latlng.lat,
+                long=latlng.lng,
+                nw_bounds=[bound.nw.lat, bound.nw.lng],
+                se_bounds=[bound.se.lat, bound.se.lng],
+                confidence=bbox.confidence,
+                coco_bbox=bbox,
+                prediction=pred_obj,
+            )
             db.add(tree_obj)
             db.commit()
-            trees.append(tree_obj)
 
-        yolo_array = bbox_to_array(yolo_bbox)
-        coco_array = bbox_to_array(coco_bbox)
-        conf_array = bbox_to_confidence(yolo_bbox)
-        count = len(yolo_array)
-
-        db_obj = Prediction()
-        db_obj.user_id = user_id  # type: ignore
-        db_obj.yolo_bbox = yolo_array  # type: ignore
-        db_obj.coco_bbox = coco_array  # type: ignore
-        db_obj.confidence = conf_array  # type: ignore
-        db_obj.image_url = url_without_key  # type: ignore
-        db_obj.count = count  # type: ignore
-        db_obj.nw_bounds = obj_in.nw_bounds
-        db_obj.se_bounds = obj_in.se_bounds
-        db_obj.center_coords = [obj_in.lat, obj_in.long]
-
-        last_pred = (
-            db.query(Prediction)
-            .filter(Prediction.user_id == user_id)
-            .order_by(Prediction.prediction_id.desc())
-            .first()
-        )
-        if isinstance(last_pred, Prediction):
-            print(last_pred.prediction_id)
-            db_obj.prediction_id = last_pred.prediction_id + 1  # type: ignore
-        else:
-            db_obj.prediction_id = 1
-
-        db.add(db_obj)
-        db.commit()
-
-        return db_obj, trees
+        return pred_obj, trees
 
 
-prediction = CRUDPrediction(Prediction)
+prediction = CRUDPrediction()
