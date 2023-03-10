@@ -2,12 +2,20 @@ from datetime import datetime, timezone
 from typing import Optional, List, Union
 from pydantic import BaseModel, HttpUrl
 
+
 # Request
 class PredictionCreateRequest(BaseModel):
     lat: float
     long: float
     nw_bounds: List[float]
     se_bounds: List[float]
+
+
+# Tree Update Status
+class TreeUpdateRequest(BaseModel):
+    status: Optional[str]
+    planting_date: Optional[str]
+    pemupukan_terakhir: Optional[str]
 
 
 # Response
@@ -24,6 +32,9 @@ class OilPalmTree(BaseModel):
     nw_bounds: List[float]
     se_bounds: List[float]
     confidence: float
+    status: Optional[str]
+    planting_date: Optional[Union[datetime, str]]
+    pemupukan_terakhir: Optional[Union[datetime, str]]
     created_at: Optional[Union[datetime, str]]
     updated_at: Optional[Union[datetime, str]]
     prediction_id: Optional[int]
@@ -79,6 +90,9 @@ class PredictionWithoutBox(PredictionBase):
 class PredictionWithBox(PredictionBase):
     trees: List[OilPalmTree]
 
+    class Config:
+        orm_mode = True
+
 
 class PredictionInDBBase(PredictionResponseBase):
     user_id: Optional[int]
@@ -88,5 +102,4 @@ class PredictionInDBBase(PredictionResponseBase):
 
 
 class Prediction(PredictionInDBBase):
-
     ...

@@ -4,6 +4,7 @@ from app.schemas.user import (
     UserUpdate,
 )
 from app.schemas.prediction import (
+    TreeUpdateRequest,
     Prediction,
     PredictionCreate,
     PredictionUpdate,

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List, Tuple
 from io import BytesIO
 
@@ -128,12 +129,14 @@ class CRUDPrediction:
     def get_by_user_id(
         self, db: Session, *, id: int, user_id: int
     ) -> Optional[Prediction]:
-        return (
+        pred = (
             db.query(Prediction)
             .filter(Prediction.user_id == user_id)
-            .filter(Prediction.id == id)
+            .filter(Prediction.prediction_id == id)
             .first()
         )
+        print(pred)
+        return pred
 
     def get_total_trees(self, db: Session, *, user_id: int) -> Optional[int]:
         return db.query(Tree).filter(Tree.user_id == user_id).count()
@@ -225,6 +228,9 @@ class CRUDPrediction:
                 confidence=bbox.confidence,
                 coco_bbox=bbox,
                 prediction=pred_obj,
+                status="Hidup",
+                planting_date=datetime.now(),
+                pemupukan_terakhir=datetime.now(),
             )
             trees.append(tree_obj)
             db.add(tree_obj)

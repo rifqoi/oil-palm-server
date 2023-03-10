@@ -16,7 +16,10 @@ class Tree(SQLModel, table=True):
     user_id: int = Field(foreign_key="users.id")
     prediction_id: int = Field(foreign_key="predictions.id")
     tree_id: Optional[int]
-    planting_year: Optional[int]
+    planting_date: Optional[datetime]
+    status: Optional[str]
+    pemupukan_terakhir: Optional[datetime]
+
     lat: float
     long: float
     yolo_bbox: List[float] = Field(sa_column=Column(ARRAY(Float, dimensions=1)))

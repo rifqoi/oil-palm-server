@@ -37,6 +37,28 @@ def get_predicted_trees(
         raise HTTPException(500, detail=str(e))
 
 
+@router.put(
+    "/trees/edit/{tree_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.OilPalmTree,
+)
+def update_tree_by_id(
+    *,
+    tree_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+    obj_in: schemas.TreeUpdateRequest,
+):
+    try:
+        updated_tree = crud.tree.update_tree_status(
+            db, user_id=current_user.id, tree_id=tree_id, obj_in=obj_in
+        )
+    except Exception as e:
+        raise HTTPException(500, detail=str(e))
+
+    return updated_tree
+
+
 @router.delete("/trees/delete/{tree_id}", status_code=status.HTTP_200_OK)
 def delete_tree_by_id(
     *,
@@ -141,6 +163,7 @@ def get_prediction(
         prediction = crud.prediction.get_by_user_id(
             db, id=prediction_id, user_id=current_user.id
         )
+        print(prediction)
     except Exception as e:
         raise HTTPException(500, detail=str(e))
 
