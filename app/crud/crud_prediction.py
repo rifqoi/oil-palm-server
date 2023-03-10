@@ -9,6 +9,7 @@ from PIL import Image
 from app.crud.base import CRUDBase
 from app.mercator.google_static_maps import GoogleStaticMap
 from app.mercator.mercator_projection import G_LatLng
+from app.ml_inference.yolo7 import OilPalmModelYoloV7
 from app.models.prediction import Prediction
 from app.models.tree import Tree
 from app.schemas.prediction import (
@@ -17,7 +18,7 @@ from app.schemas.prediction import (
     PredictionCreateRequest,
 )
 from app.core.config import settings
-from app.ml_inference.yolo import OilPalmModel, BoundingBox
+from app.ml_inference.yolo4 import OilPalmModel, BoundingBox
 
 
 def read_image_from_url(url: str) -> np.ndarray:
@@ -207,12 +208,12 @@ class CRUDPrediction:
             else:
                 last_id = 1
 
-            if count == 1:
-                print("yolo", yolo_bbox[0])
-                print("coco", bbox)
-                print("lat", latlng.lat)
-                print("lng", latlng.lng)
-                print()
+            # if count == 1:
+            #     print("yolo", yolo_bbox[0])
+            #     print("coco", bbox)
+            #     print("lat", latlng.lat)
+            #     print("lng", latlng.lng)
+            #     print()
 
             tree_obj = Tree(
                 user_id=user_id,
@@ -225,6 +226,7 @@ class CRUDPrediction:
                 coco_bbox=bbox,
                 prediction=pred_obj,
             )
+            trees.append(tree_obj)
             db.add(tree_obj)
             db.commit()
 

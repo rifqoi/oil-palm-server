@@ -62,19 +62,19 @@ class MercatorProjection:
         proj = MercatorProjection()
         point = G_Point(0, 0)
         origin = self.worldZ0Center_
-        print(origin.__dict__)
+        # print(origin.__dict__)
         point.x = origin.x + (latLng.lng * self.pixelsPerLonDegree_)
         # 128 + (longitude * (256/360))
         siny = proj.bound(math.sin(proj.degreesToRadians(latLng.lat)), -0.9999, 0.9999)
-        print(siny)
+        # print(siny)
         # See wikipedia for mercator projection math
         # For R=width/2pi (usual case), y'(lat)=R*sec(lat), therefore, y=
         point.y = origin.y + 0.5 * math.log((1 + siny) / (1 - siny)) * (
             -self.pixelsPerLonRadian_
         )
-        print("1 + siny", 1 + siny)
-        print("1 - siny", 1 - siny)
-        print("math.log", math.log((1 + siny) / (1 - siny)))
+        # print("1 + siny", 1 + siny)
+        # print("1 - siny", 1 - siny)
+        # print("math.log", math.log((1 + siny) / (1 - siny)))
         return point
 
     # Create a method for converting z=0 pixel coordinates to geographical coordinates
@@ -82,11 +82,11 @@ class MercatorProjection:
         proj = MercatorProjection()
         origin = self.worldZ0Center_
         lng = (point.x - origin.x) / self.pixelsPerLonDegree_
-        print(point.x, origin.x, self.pixelsPerLonDegree_)
+        # print(point.x, origin.x, self.pixelsPerLonDegree_)
         latRadians = (point.y - origin.y) / -self.pixelsPerLonRadian_
         lat = proj.radiansToDegrees(2 * math.atan(math.exp(latRadians)) - math.pi / 2)
-        print("latRadians", latRadians)
-        print("math.exp", math.exp(latRadians))
-        print("math.atan", math.atan(math.exp(latRadians)))
-        print("2*mathatan - mathpi/2", math.atan(math.exp(latRadians)))
+        # print("latRadians", latRadians)
+        # print("math.exp", math.exp(latRadians))
+        # print("math.atan", math.atan(math.exp(latRadians)))
+        # print("2*mathatan - mathpi/2", math.atan(math.exp(latRadians)))
         return G_LatLng(lat, lng)

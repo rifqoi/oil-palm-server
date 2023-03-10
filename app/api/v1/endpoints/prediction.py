@@ -62,12 +62,12 @@ def predict_image(
     request: schemas.PredictionCreateRequest,
     current_user: models.User = Depends(deps.get_current_user),
 ) -> Any:
-
     try:
         prediction, trees = crud.prediction.create(
             db, obj_in=request, user_id=current_user.id
         )
-        print(prediction)
+        prediction.trees = trees
+        # print(prediction)
         # resp_dict = {}
         # resp_dict["user_id"] = prediction.user_id  # type: ignore
         # resp_dict["yolo_bbox"] = prediction.yolo_bbox  # type: ignore

@@ -6,19 +6,7 @@ import numpy as np
 from numpy.core.numeric import argwhere
 import onnxruntime as ort
 
-
-class BoundingBox(BaseModel):
-    # type: ignore
-    x: float = None
-    y: float = None
-    width: float = None
-    height: float = None
-    confidence: float = None
-    label: str = None
-
-    # For mercator projection
-    x_center: float = None
-    y_center: float = None
+from app.ml_inference.types import BoundingBox
 
 
 class OilPalmModel:
@@ -163,6 +151,7 @@ class OilPalmModel:
             bbox_model.confidence = box[4].item()
             bbox_model.label = box[5]
 
+            print(bbox_model.dict())
             bboxes.append(bbox_model)
 
         return bboxes
