@@ -124,6 +124,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "geojson"
+version = "2.5.0"
+description = "Python bindings and utilities for GeoJSON"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "greenlet"
 version = "1.1.3"
 description = "Lightweight in-process concurrent programming"
@@ -408,6 +416,37 @@ python-versions = ">=3.6,<4"
 pyasn1 = ">=0.1.3"
 
 [[package]]
+name = "scipy"
+version = "1.9.3"
+description = "Fundamental algorithms for scientific computing in Python"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.dependencies]
+numpy = ">=1.18.5,<1.26.0"
+
+[package.extras]
+test = ["pytest", "pytest-cov", "pytest-xdist", "asv", "mpmath", "gmpy2", "threadpoolctl", "scikit-umfpack"]
+doc = ["sphinx (!=4.1.0)", "pydata-sphinx-theme (==0.9.0)", "sphinx-panels (>=0.5.2)", "matplotlib (>2)", "numpydoc", "sphinx-tabs"]
+dev = ["mypy", "typing-extensions", "pycodestyle", "flake8"]
+
+[[package]]
+name = "shapely"
+version = "2.0.1"
+description = "Manipulation and analysis of geometric objects"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = ">=1.14"
+
+[package.extras]
+docs = ["numpydoc (>=1.1.0,<1.2.0)", "matplotlib", "sphinx", "sphinx-book-theme", "sphinx-remove-toctrees"]
+test = ["pytest", "pytest-cov"]
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -505,6 +544,20 @@ python-versions = ">=3.8"
 mpmath = ">=0.19"
 
 [[package]]
+name = "turfpy"
+version = "0.0.7"
+description = "A Python library for performing geospatial data analysis which reimplements turf.js."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+geojson = "*"
+numpy = "*"
+scipy = "*"
+shapely = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.3.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -582,7 +635,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "f9b7112bf5674ce69113492f021b540c3384aab6547abc86b0e62cf717f2402e"
+content-hash = "18b09ef9b6377f1c8ce1343c0e4d3daf525c791c6721dfb7a72b1dfff83f1c43"
 
 [metadata.files]
 alembic = []
@@ -595,6 +648,7 @@ coloredlogs = []
 ecdsa = []
 fastapi = []
 flatbuffers = []
+geojson = []
 greenlet = []
 h11 = []
 httptools = []
@@ -620,6 +674,8 @@ python-multipart = []
 pyyaml = []
 requests = []
 rsa = []
+scipy = []
+shapely = []
 six = []
 sniffio = []
 sqlalchemy = []
@@ -627,6 +683,7 @@ sqlalchemy2-stubs = []
 sqlmodel = []
 starlette = []
 sympy = []
+turfpy = []
 typing-extensions = []
 urllib3 = []
 uvicorn = []

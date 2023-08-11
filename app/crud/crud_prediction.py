@@ -151,7 +151,8 @@ class CRUDPrediction:
             obj_in.long,
         )
 
-        model = OilPalmModel()
+        # model = OilPalmModel()
+        model = OilPalmModelYoloV7()
         map = GoogleStaticMap(width, height)
         url, url_without_key = map.static_map_url(
             obj_in.lat,

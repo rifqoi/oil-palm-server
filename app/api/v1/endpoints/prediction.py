@@ -1,5 +1,7 @@
 from datetime import datetime
 from io import BytesIO
+from turfpy.measurement import boolean_point_in_polygon
+from geojson import Point, Polygon, Feature
 
 import requests
 
@@ -32,6 +34,72 @@ def get_predicted_trees(
         for tree in trees:
             tree.created_at = tree.created_at.strftime("%Y-%m-%d")
 
+        jsn = {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [107.02655, -6.472885],
+                        [107.025279, -6.471629],
+                        [107.027918, -6.468141],
+                        [107.027532, -6.468258],
+                        [107.02721, -6.468301],
+                        [107.02691, -6.468557],
+                        [107.026684, -6.468578],
+                        [107.026716, -6.468952],
+                        [107.026674, -6.46924],
+                        [107.026521, -6.469308],
+                        [107.026475, -6.469183],
+                        [107.026566, -6.469097],
+                        [107.026531, -6.468945],
+                        [107.026314, -6.468713],
+                        [107.026022, -6.468439],
+                        [107.02545, -6.468281],
+                        [107.024981, -6.468148],
+                        [107.024646, -6.468196],
+                        [107.024592, -6.468476],
+                        [107.024957, -6.468649],
+                        [107.025163, -6.468852],
+                        [107.025228, -6.469073],
+                        [107.025231, -6.469287],
+                        [107.025169, -6.469111],
+                        [107.025056, -6.469036],
+                        [107.024968, -6.46906],
+                        [107.02497, -6.468921],
+                        [107.024823, -6.468785],
+                        [107.024536, -6.468655],
+                        [107.02441, -6.468887],
+                        [107.024125, -6.46966],
+                        [107.023822, -6.470353],
+                        [107.02272, -6.470209],
+                        [107.021787, -6.47022],
+                        [107.021835, -6.470935],
+                        [107.021931, -6.471265],
+                        [107.022232, -6.471777],
+                        [107.02338, -6.471409],
+                        [107.023578, -6.471457],
+                        [107.023889, -6.47166],
+                        [107.024485, -6.471846],
+                        [107.02486, -6.472054],
+                        [107.02655, -6.472885],
+                    ]
+                ],
+            },
+        }
+
+        trees2 = crud.tree.get_all_trees_center(db, user_id=current_user.id)
+        tree_in_area = []
+        for tree in trees2:
+            point = Feature(geometry=Point(tree))
+            polygon = Polygon(jsn["geometry"]["coordinates"])
+            res = boolean_point_in_polygon(point, polygon)
+            if res:
+                tree_in_area.append(tree)
+            print(res)
+        print(len(tree_in_area))
+        print(tree_in_area)
         return trees
     except Exception as e:
         raise HTTPException(500, detail=str(e))

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from sqlalchemy.orm import Session
 
@@ -58,6 +58,10 @@ class CRUDTree:
 
     def get_total_counted_trees(self, db: Session, *, user_id: int) -> Optional[int]:
         return db.query(Tree).filter(Tree.user_id == user_id).count()
+
+    def get_all_trees_center(self, db: Session, *, user_id: int) -> Tuple[float, float]:
+        center = db.query(Tree.long, Tree.lat).filter(Tree.user_id == user_id).all()
+        return center
 
 
 tree = CRUDTree()
