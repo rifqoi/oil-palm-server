@@ -11,6 +11,7 @@ from app.crud.base import CRUDBase
 from app.mercator.google_static_maps import GoogleStaticMap
 from app.mercator.mercator_projection import G_LatLng
 from app.ml_inference.yolo7 import OilPalmModelYoloV7
+from app.ml_inference.yolo8 import OilPalmModelYolov8
 from app.models.prediction import Prediction
 from app.models.tree import Tree
 from app.schemas.prediction import (
@@ -152,16 +153,20 @@ class CRUDPrediction:
         )
 
         # model = OilPalmModel()
-        model = OilPalmModelYoloV7()
+        # model = OilPalmModelYoloV7()
+        model = OilPalmModelYolov8()
         map = GoogleStaticMap(width, height)
         url, url_without_key = map.static_map_url(
             obj_in.lat,
             obj_in.long,
             20,
         )
-        img_array = map.read_image_from_url(url)
+        img_array = map.read_image_from_url(url, return_array=True)
         yolo_bbox = model.predict(img_array)
+        print(yolo_bbox)
         coco_bbox = convert_yolo_to_coco(yolo_bbox, width, height)
+        print()
+        print(coco_bbox)
 
         yolo_array = bbox_to_array(yolo_bbox)
         count = len(yolo_array)

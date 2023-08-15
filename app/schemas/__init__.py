@@ -14,3 +14,5 @@ from app.schemas.prediction import (
     OilPalmTree,
     TotalOilPalmTree,
 )
+
+from app.schemas.area import AreaInsert, AreaGet

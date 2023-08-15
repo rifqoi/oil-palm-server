@@ -1,7 +1,10 @@
 from datetime import datetime
+import traceback
 from io import BytesIO
 from turfpy.measurement import boolean_point_in_polygon
 from geojson import Point, Polygon, Feature
+
+import logging
 
 import requests
 
@@ -171,6 +174,7 @@ def predict_image(
         # resp_dict["nw_bounds"] = prediction.nw_bounds
         # resp_dict["se_bounds"] = prediction.se_bounds
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(500, detail=str(e))
 
     return prediction

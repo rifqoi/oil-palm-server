@@ -1,5 +1,5 @@
 import io
-from typing import Tuple
+from typing import Tuple, Union
 
 from PIL import Image
 
@@ -28,12 +28,15 @@ class GoogleStaticMap:
         self.map_width = mapWidth
         self.map_height = mapHeight
 
-    def read_image_from_url(self, url: str) -> np.ndarray:
+    def read_image_from_url(self, url: str, return_array=True):
         response = requests.get(url=url)
         img = Image.open(io.BytesIO(response.content))
 
-        arr = np.asarray(img)
-        return arr
+        if return_array:
+            arr = np.asarray(img)
+            return arr
+        else:
+            return img
 
     def static_map_url(
         self,
